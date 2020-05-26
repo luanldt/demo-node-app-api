@@ -1,0 +1,47 @@
+version: '3'
+services:
+  db:
+    image: "mysql/mysql-server:5.7"
+    networks:
+      - backend
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'movies'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'root'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: '123456'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: '123456'
+  rabbitmq: 
+    image: "rabbitmq:3-management"
+    restart: always
+    networks:
+      - backend
+  api:
+    image: "luanldt/node-web-app:0.0.3"
+    restart: always
+    links:
+      - "rabbitmq:rabbitmq"
+    networks:
+      - backend
+    ports: 
+      - 3000:3000
+    depends_on:
+      - db
+      - rabbitmq
+      - backend
+  backend:
+    image: "luanldt/demo-crud-spring-boot:0.0.5"
+    restart: always
+    links:
+      - "rabbitmq:rabbitmq"
+      - "db:db"
+    networks:
+      - backend
+    depends_on:
+      - db
+      - rabbitmq
+networks: 
+  backend:
+
